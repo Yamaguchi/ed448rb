@@ -7,6 +7,10 @@ module Ed448
 
   module_function
 
+  EDDSA_448_PUBLIC_BYTES = 57
+  EDDSA_448_PRIVATE_BYTES = 57
+  EDDSA_448_SIGNATURE_BYTES = EDDSA_448_PRIVATE_BYTES + EDDSA_448_PUBLIC_BYTES
+
   # macOS
   # ENV['LIBGOLDILOCKS'] = '/usr/local/lib/libgoldilocks.dylib'
   def init
@@ -85,31 +89,27 @@ module Ed448
     attach_function(:goldilocks_ed448_verify, [:pointer, :pointer, :pointer,:int, :int, :pointer, :int], :int)
   end
 
-  PRIVATE_KEY_SIZE = 57
-  PUBLIC_KEY_SIZE = 57
-  SIGNATURE_SIZE = PRIVATE_KEY_SIZE + PUBLIC_KEY_SIZE
-
   def derive_public_key(private_key)
-    private_key = FFI::MemoryPointer.new(:uchar, PRIVATE_KEY_SIZE).put_bytes(0, private_key)
-    public_key = FFI::MemoryPointer.new(:uchar, PUBLIC_KEY_SIZE)
+    private_key = FFI::MemoryPointer.new(:uchar, EDDSA_448_PRIVATE_BYTES).put_bytes(0, private_key)
+    public_key = FFI::MemoryPointer.new(:uchar, EDDSA_448_PUBLIC_BYTES)
     goldilocks_ed448_derive_public_key(public_key, private_key)
     public_key.read_string(57)
   end
 
   def sign(private_key, public_key, message)
-    signature = FFI::MemoryPointer.new(:uchar, SIGNATURE_SIZE)
-    private_key = FFI::MemoryPointer.new(:uchar, PRIVATE_KEY_SIZE).put_bytes(0, private_key)
-    public_key = FFI::MemoryPointer.new(:uchar, PUBLIC_KEY_SIZE).put_bytes(0, public_key)
+    signature = FFI::MemoryPointer.new(:uchar, EDDSA_448_SIGNATURE_BYTES)
+    private_key = FFI::MemoryPointer.new(:uchar, EDDSA_448_PRIVATE_BYTES).put_bytes(0, private_key)
+    public_key = FFI::MemoryPointer.new(:uchar, EDDSA_448_PUBLIC_BYTES).put_bytes(0, public_key)
     message_len = message.bytesize
     message = FFI::MemoryPointer.new(:uchar, message_len).put_bytes(0, message)
     context = FFI::MemoryPointer.new(:uchar, 0)
     goldilocks_ed448_sign(signature, private_key, public_key, message, message_len, 0, context, 0)
-    signature.read_string(SIGNATURE_SIZE)
+    signature.read_string(EDDSA_448_SIGNATURE_BYTES)
   end
 
   def verify(signature, public_key, message)
-    signature = FFI::MemoryPointer.new(:uchar, SIGNATURE_SIZE).put_bytes(0, signature)
-    public_key = FFI::MemoryPointer.new(:uchar, PUBLIC_KEY_SIZE).put_bytes(0, public_key)
+    signature = FFI::MemoryPointer.new(:uchar, EDDSA_448_SIGNATURE_BYTES).put_bytes(0, signature)
+    public_key = FFI::MemoryPointer.new(:uchar, EDDSA_448_PUBLIC_BYTES).put_bytes(0, public_key)
     message_len = message.bytesize
     message = FFI::MemoryPointer.new(:uchar, message_len).put_bytes(0, message)
     context = FFI::MemoryPointer.new(:uchar, 0)
