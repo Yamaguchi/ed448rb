@@ -107,13 +107,25 @@ module Ed448
     #     const uint8_t scalar[GOLDILOCKS_X448_PRIVATE_BYTES]
     # ) GOLDILOCKS_API_VIS GOLDILOCKS_NONNULL GOLDILOCKS_WARN_UNUSED GOLDILOCKS_NOINLINE;
     attach_function(:goldilocks_x448, [:pointer, :pointer, :pointer], :int)
+
+    # @brief RFC 7748 Diffie-Hellman base point scalarmul.  This function uses
+    # a different (non-Decaf) encoding.
+    #
+    # @param [out] out The public key base*scalar
+    # @param [in] scalar The private scalar.
+    #
+    # void goldilocks_x448_derive_public_key (
+    #     uint8_t out[GOLDILOCKS_X448_PUBLIC_BYTES],
+    #     const uint8_t scalar[GOLDILOCKS_X448_PRIVATE_BYTES]
+    # ) GOLDILOCKS_API_VIS GOLDILOCKS_NONNULL GOLDILOCKS_NOINLINE;
+    attach_function(:goldilocks_x448_derive_public_key, [:pointer, :pointer], :void)
   end
 
   def derive_public_key(private_key)
     private_key = FFI::MemoryPointer.new(:uchar, EDDSA_448_PRIVATE_BYTES).put_bytes(0, private_key)
     public_key = FFI::MemoryPointer.new(:uchar, EDDSA_448_PUBLIC_BYTES)
     goldilocks_ed448_derive_public_key(public_key, private_key)
-    public_key.read_string(57)
+    public_key.read_string(EDDSA_448_PUBLIC_BYTES)
   end
 
   def sign(private_key, public_key, message)

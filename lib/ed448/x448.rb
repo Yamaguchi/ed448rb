@@ -5,12 +5,20 @@ module Ed448
     X448_PRIVATE_BYTES = 56
     X448_PUBLIC_BYTES = 56
 
+    def derive_public_key(private_key)
+      private_key = FFI::MemoryPointer.new(:uchar, X448_PRIVATE_BYTES).put_bytes(0, private_key)
+      public_key = FFI::MemoryPointer.new(:uchar, X448_PUBLIC_BYTES)
+      Ed448.goldilocks_x448_derive_public_key(public_key, private_key)
+      public_key.read_string(X448_PUBLIC_BYTES)
+    end
+
     def dh(public_key, private_key)
       private_key = FFI::MemoryPointer.new(:uchar, X448_PRIVATE_BYTES).put_bytes(0, private_key)
       public_key = FFI::MemoryPointer.new(:uchar, X448_PUBLIC_BYTES).put_bytes(0, public_key)
       shared_key = FFI::MemoryPointer.new(:uchar, X448_PUBLIC_BYTES)
       result = Ed448.goldilocks_x448(shared_key, public_key, private_key)
       raise 'goldilocks_x448 failed.' if result != -1
+
       shared_key.read_bytes(X448_PUBLIC_BYTES)
     end
   end
