@@ -1,13 +1,5 @@
 require 'json'
 
-def b2h(bin)
-  bin.unpack1('H*')
-end
-
-def h2b(hex)
-  [hex].pack('H*')
-end
-
 RSpec.describe Ed448 do
   it 'has a version number' do
     expect(Ed448::VERSION).not_to be nil

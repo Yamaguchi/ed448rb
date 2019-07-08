@@ -7,6 +7,8 @@ module Ed448
 
   module_function
 
+  autoload :X448, 'ed448/x448'
+
   EDDSA_448_PUBLIC_BYTES = 57
   EDDSA_448_PRIVATE_BYTES = 57
   EDDSA_448_SIGNATURE_BYTES = EDDSA_448_PRIVATE_BYTES + EDDSA_448_PUBLIC_BYTES
@@ -87,6 +89,24 @@ module Ed448
     #     uint8_t context_len
     # )
     attach_function(:goldilocks_ed448_verify, [:pointer, :pointer, :pointer,:int, :int, :pointer, :int], :int)
+
+    # @brief RFC 7748 Diffie-Hellman scalarmul, used to compute shared secrets.
+    # This function uses a different (non-Decaf) encoding.
+    #
+    # @param [out] shared The shared secret base*scalar
+    # @param [in] base The other party's public key, used as the base of the scalarmul.
+    # @param [in] scalar The private scalar to multiply by.
+    #
+    # @retval GOLDILOCKS_SUCCESS The scalarmul succeeded.
+    # @retval GOLDILOCKS_FAILURE The scalarmul didn't succeed, because the base
+    # point is in a small subgroup.
+    #
+    # goldilocks_error_t goldilocks_x448 (
+    #     uint8_t shared[GOLDILOCKS_X448_PUBLIC_BYTES],
+    #     const uint8_t base[GOLDILOCKS_X448_PUBLIC_BYTES],
+    #     const uint8_t scalar[GOLDILOCKS_X448_PRIVATE_BYTES]
+    # ) GOLDILOCKS_API_VIS GOLDILOCKS_NONNULL GOLDILOCKS_WARN_UNUSED GOLDILOCKS_NOINLINE;
+    attach_function(:goldilocks_x448, [:pointer, :pointer, :pointer], :int)
   end
 
   def derive_public_key(private_key)
