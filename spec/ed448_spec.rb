@@ -27,6 +27,9 @@ RSpec.describe Ed448 do
 
         signature = Ed448.sign(h2b(vector[:private_key]), h2b(vector[:public_key]), h2b(vector[:message]))
         it { expect(b2h(signature)).to eq vector[:signature] }
+
+        result = Ed448.verify(h2b(vector[:signature]), h2b(vector[:public_key]), h2b(vector[:message]))
+        it { expect(result).to be_truthy }
       end
     end
   end
