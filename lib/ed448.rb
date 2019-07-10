@@ -16,7 +16,8 @@ module Ed448
   # macOS
   # ENV['LIBGOLDILOCKS'] = '/usr/local/lib/libgoldilocks.dylib'
   def init
-    raise 'libgoldilocks library dose not found.' unless File.exist?(ENV['LIBGOLDILOCKS'])
+    raise LoadError unless ENV['LIBGOLDILOCKS']
+    raise LoadError unless File.exist?(ENV['LIBGOLDILOCKS'])
 
     ffi_lib(ENV['LIBGOLDILOCKS'])
     load_functions
