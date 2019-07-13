@@ -26,7 +26,7 @@ module Ed448
   def load_functions
     # @brief EdDSA key generation.  This function uses a different (non-Decaf)
     # encoding.
-    #     
+    #
     # @param [out] pubkey The public key.
     # @param [in] privkey The private key.
     #
@@ -51,6 +51,7 @@ module Ed448
     # messages, at least without some very careful protocol-level disambiguation.  For Ed448 it is
     # safe.  The C++ wrapper is designed to make it harder to screw this up, but this C code gives
     # you no seat belt.
+    #
     # void goldilocks_ed448_sign (
     #   uint8_t signature[GOLDILOCKS_EDDSA_448_SIGNATURE_BYTES],
     #   const uint8_t privkey[GOLDILOCKS_EDDSA_448_PRIVATE_BYTES],
@@ -129,24 +130,26 @@ module Ed448
     public_key.read_string(EDDSA_448_PUBLIC_BYTES)
   end
 
-  def sign(private_key, public_key, message)
+  def sign(private_key, public_key, message, context: '')
     signature = FFI::MemoryPointer.new(:uchar, EDDSA_448_SIGNATURE_BYTES)
     private_key = FFI::MemoryPointer.new(:uchar, EDDSA_448_PRIVATE_BYTES).put_bytes(0, private_key)
     public_key = FFI::MemoryPointer.new(:uchar, EDDSA_448_PUBLIC_BYTES).put_bytes(0, public_key)
     message_len = message.bytesize
     message = FFI::MemoryPointer.new(:uchar, message_len).put_bytes(0, message)
-    context = FFI::MemoryPointer.new(:uchar, 0)
-    goldilocks_ed448_sign(signature, private_key, public_key, message, message_len, 0, context, 0)
+    context_len = context.bytesize
+    context = FFI::MemoryPointer.new(:uchar, context_len).put_bytes(0, context)
+    goldilocks_ed448_sign(signature, private_key, public_key, message, message_len, 0, context, context_len)
     signature.read_string(EDDSA_448_SIGNATURE_BYTES)
   end
 
-  def verify(signature, public_key, message)
+  def verify(signature, public_key, message, context: '')
     signature = FFI::MemoryPointer.new(:uchar, EDDSA_448_SIGNATURE_BYTES).put_bytes(0, signature)
     public_key = FFI::MemoryPointer.new(:uchar, EDDSA_448_PUBLIC_BYTES).put_bytes(0, public_key)
     message_len = message.bytesize
     message = FFI::MemoryPointer.new(:uchar, message_len).put_bytes(0, message)
-    context = FFI::MemoryPointer.new(:uchar, 0)
-    result = goldilocks_ed448_verify(signature, public_key, message, message_len, 0, context, 0)
+    context_len = context.bytesize
+    context = FFI::MemoryPointer.new(:uchar, context_len).put_bytes(0, context)
+    result = goldilocks_ed448_verify(signature, public_key, message, message_len, 0, context, context_len)
     result == -1
   end
 end

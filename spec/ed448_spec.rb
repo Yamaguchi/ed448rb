@@ -16,11 +16,14 @@ RSpec.describe Ed448 do
     vectors.each.with_index do |vector, i|
       describe "#{i}:#{vector[:name]}" do
         let(:derived_public_key) { Ed448.derive_public_key(h2b(vector[:private_key])) }
-        let(:signature) { Ed448.sign(h2b(vector[:private_key]), h2b(vector[:public_key]), h2b(vector[:message])) }
-        let(:result) { Ed448.verify(h2b(vector[:signature]), h2b(vector[:public_key]), h2b(vector[:message])) }
 
         it { expect(b2h(derived_public_key)).to eq vector[:public_key] }
+
+        context = h2b(vector[:context] || '')
+        signature = Ed448.sign(h2b(vector[:private_key]), h2b(vector[:public_key]), h2b(vector[:message]), context: context)
         it { expect(b2h(signature)).to eq vector[:signature] }
+
+        result = Ed448.verify(h2b(vector[:signature]), h2b(vector[:public_key]), h2b(vector[:message]), context: context)
         it { expect(result).to be_truthy }
       end
     end
