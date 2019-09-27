@@ -7,6 +7,7 @@ module Ed448
 
   module_function
 
+  autoload :Shake, 'ed448/shake'
   autoload :X448, 'ed448/x448'
 
   EDDSA_448_PUBLIC_BYTES = 57
@@ -121,6 +122,22 @@ module Ed448
     #     const uint8_t scalar[GOLDILOCKS_X448_PRIVATE_BYTES]
     # ) GOLDILOCKS_API_VIS GOLDILOCKS_NONNULL GOLDILOCKS_NOINLINE;
     attach_function(:goldilocks_x448_derive_public_key, [:pointer, :pointer], :void)
+
+    #  @brief Hash (in) to (out)
+    #  @param [in] in The input data.
+    #  @param [in] inlen The length of the input data.
+    #  @param [out] out A buffer for the output data.
+    #  @param [in] outlen The length of the output data.
+    #  @param [in] params The parameters of the sponge hash.
+    #
+    # goldilocks_error_t goldilocks_sha3_hash (
+    #     uint8_t *out,
+    #     size_t outlen,
+    #     const uint8_t *in,
+    #     size_t inlen,
+    #     const struct goldilocks_kparams_s *params
+    # ) GOLDILOCKS_API_VIS;
+    attach_function(:goldilocks_sha3_hash, [:pointer, :int, :pointer, :int, :pointer], :int)
   end
 
   def derive_public_key(private_key)
