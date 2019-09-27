@@ -147,7 +147,7 @@ module Ed448
     public_key.read_string(EDDSA_448_PUBLIC_BYTES)
   end
 
-  def sign(private_key, public_key, message, context: '')
+  def sign(private_key, public_key, message, context: '', prehash: false)
     signature = FFI::MemoryPointer.new(:uchar, EDDSA_448_SIGNATURE_BYTES)
     private_key = FFI::MemoryPointer.new(:uchar, EDDSA_448_PRIVATE_BYTES).put_bytes(0, private_key)
     public_key = FFI::MemoryPointer.new(:uchar, EDDSA_448_PUBLIC_BYTES).put_bytes(0, public_key)
@@ -155,18 +155,18 @@ module Ed448
     message = FFI::MemoryPointer.new(:uchar, message_len).put_bytes(0, message)
     context_len = context.bytesize
     context = FFI::MemoryPointer.new(:uchar, context_len).put_bytes(0, context)
-    goldilocks_ed448_sign(signature, private_key, public_key, message, message_len, 0, context, context_len)
+    goldilocks_ed448_sign(signature, private_key, public_key, message, message_len, prehash ? 1 : 0, context, context_len)
     signature.read_string(EDDSA_448_SIGNATURE_BYTES)
   end
 
-  def verify(signature, public_key, message, context: '')
+  def verify(signature, public_key, message, context: '', prehash: false)
     signature = FFI::MemoryPointer.new(:uchar, EDDSA_448_SIGNATURE_BYTES).put_bytes(0, signature)
     public_key = FFI::MemoryPointer.new(:uchar, EDDSA_448_PUBLIC_BYTES).put_bytes(0, public_key)
     message_len = message.bytesize
     message = FFI::MemoryPointer.new(:uchar, message_len).put_bytes(0, message)
     context_len = context.bytesize
     context = FFI::MemoryPointer.new(:uchar, context_len).put_bytes(0, context)
-    result = goldilocks_ed448_verify(signature, public_key, message, message_len, 0, context, context_len)
+    result = goldilocks_ed448_verify(signature, public_key, message, message_len, prehash ? 1 : 0, context, context_len)
     result == -1
   end
 end

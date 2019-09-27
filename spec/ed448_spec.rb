@@ -20,10 +20,11 @@ RSpec.describe Ed448 do
         it { expect(b2h(derived_public_key)).to eq vector[:public_key] }
 
         context = h2b(vector[:context] || '')
-        signature = Ed448.sign(h2b(vector[:private_key]), h2b(vector[:public_key]), h2b(vector[:message]), context: context)
+        message = vector[:prehash] ? Ed448::Shake.hash(h2b(vector[:message])) : h2b(vector[:message])
+        signature = Ed448.sign(h2b(vector[:private_key]), h2b(vector[:public_key]), message, context: context, prehash: vector[:prehash])
         it { expect(b2h(signature)).to eq vector[:signature] }
 
-        result = Ed448.verify(h2b(vector[:signature]), h2b(vector[:public_key]), h2b(vector[:message]), context: context)
+        result = Ed448.verify(h2b(vector[:signature]), h2b(vector[:public_key]), message, context: context, prehash: vector[:prehash])
         it { expect(result).to be_truthy }
       end
     end
